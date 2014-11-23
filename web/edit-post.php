@@ -4,6 +4,7 @@
  */
 
 use Blog\Entity\Post;
+use Blog\Entity\Tag;
 
 require_once __DIR__.'/../src/bootstrap.php';
 
@@ -30,6 +31,28 @@ if('POST' === $_SERVER['REQUEST_METHOD']){
     $post->setTitle($_POST['title'])
             ->setBody($_POST['body']);
     
+    $newTags = [];
+    foreach(explode(',', $_POST['tags'])  as $tagName){
+        $trimmedTagName = trim($tagName);
+        $tag = $entityManager->find('Blog\Entity\Tag', $trimmedTagName);
+        if(!$tag){
+            $tag = new Tag();
+            $tag->setName($trimmedTagName);
+        }
+        
+        $newTags[] = $tag;
+    }
+    
+    //remove unused tags
+    foreach(array_diff($post->getTags()->toArray(),$newTags) as $tag){
+        $post->removeTag($tag);
+    }
+    
+    //adds new tags
+    foreach(array_diff($newTags,$post->getTags()->toArray()) as $tag){
+        $post->addTag($tag);
+    }
+    
     //Flush changes to the database
     $entityManager->flush();
     
@@ -52,7 +75,7 @@ $pageTitle = isset($post) ? sprintf('Edit post #%d',$post->getId()) : 'Create a 
         <form method="POST">
             <label>Title <input type="text" name="title" value="<?=isset($post) ? htmlspecialchars($post->getTitle()) : '' ?>" maxlength="255" required></label><br/>
             <label>Body <textarea name="body" cols="20" rows="10" required><?=isset($post) ? htmlspecialchars($post->getBody()) : '' ?></textarea></label><br/>
-            
+            <label>Tags <input type="text" name="tags" value="<?=isset($post) ? htmlspecialchars(implode(',',$post->getTags()->toArray())) : ''?>" required ></label><br/>
             <input type="submit" />
         </form>
         

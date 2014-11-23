@@ -19,7 +19,7 @@ $posts = $entityManager->getRepository('Blog\Entity\Post')->findAll();
         
         <?php foreach($posts as $post): ?>
         <article>
-            <h1><?=htmlspecialchars($post->getTitle()) ?></h1>
+            <h1><a href="view-post.php?id=<?=$post->getId()?>"><?=htmlspecialchars($post->getTitle()) ?></a></h1>
             Date of publication: <?=$post->getPublicationDate()->format('Y-m-d H:i:s')?>
             
             <p><?=nl2br(htmlspecialchars($post->getBody()))?></p>

@@ -9,6 +9,9 @@ use Doctrine\ORM\Mapping\GeneratedValue;
 use Doctrine\ORM\Mapping\Column;
 use Doctrine\ORM\Mapping\OneToMany;
 use Doctrine\ORM\Mapping\ArrayCollection;
+use Doctrine\ORM\Mapping\ManyToMany;
+use Doctrine\ORM\Mapping\JoinTable;
+use Doctrine\ORM\Mapping\JoinColumn;
 
 /**
  * Blog Post Entity
@@ -57,6 +60,14 @@ class Post{
          * @OneToMany(targetEntity="Comment", mappedBy="post")
          */
         protected $comments;
+        
+        /**
+         * @var Tag[]
+         * 
+         * @ManyToMany(targetEntity="Tag",inversedBy="posts",fetch="EAGER",cascade={"persist"},orphanRemoval=true)
+         * @JoinTable(inverseJoinColumns={@JoinColumn(name="tag_name",referencedColumnName="name")})
+         */
+        protected $tags;
 
     /**
      * Get id
@@ -142,6 +153,41 @@ class Post{
      */
     function __construct()
     {
-        $this->comments = new \Doctrine\Common\Collections\ArrayCollection();
+        $this->comments = new ArrayCollection();
+        $this->tags = new ArrayCollection();
+    }
+
+    /**
+     * Add comments
+     *
+     * @param \Blog\Entity\Comment $comments
+     * @return Post
+     */
+    public function addComment(\Blog\Entity\Comment $comments)
+    {
+        $this->comments[] = $comments;
+        $comments->setPost($this);
+
+        return $this;
+    }
+
+    /**
+     * Remove comments
+     *
+     * @param \Blog\Entity\Comment $comments
+     */
+    public function removeComment(\Blog\Entity\Comment $comments)
+    {
+        $this->comments->removeElement($comments);
+    }
+
+    /**
+     * Get comments
+     *
+     * @return \Doctrine\Common\Collections\Collection 
+     */
+    public function getComments()
+    {
+        return $this->comments;
     }
 }
